@@ -7,7 +7,7 @@ import React, {
 } from "react";
 
 export type Book = {
-  id: string;
+  _id: string;
   title: string;
   author: string;
   coverImage: string;
@@ -44,6 +44,8 @@ type BookContextType = {
   ) => Promise<void>;
   getBook: (id: string) => Book | undefined;
   getAllGenres: () => string[];
+  fetchBookById: (bookId: string) => Promise<Book | null>;
+  submitReview: (reviewData: Omit<Review, "id" | "date">) => Promise<any>;
 };
 
 const BookContext = createContext<BookContextType | undefined>(undefined);
@@ -57,32 +59,53 @@ export const BookProvider: React.FC<{ children: ReactNode }> = ({
 
   // Fetch books from API
   useEffect(() => {
-    const fetchBooks = async () => {
-      try {
-        const response = await fetch("http://localhost:5000/api/books");
-        if (!response.ok) throw new Error("Failed to fetch books");
-        const jsonResponse = await response.json();
+   const fetchBooks = async () => {
+     try {
+       const response = await fetch(`http://localhost:5000/api/books`);
+       if (!response.ok) throw new Error("Failed to fetch books");
 
-        // Extract books array from response's "data" field
-        if (jsonResponse && Array.isArray(jsonResponse.data)) {
-          setBooks(jsonResponse.data);
-        } else {
-          console.error(
-            "API response does not contain a valid books array:",
-            jsonResponse
-          );
-          setBooks([]);
-        }
-      } catch (error) {
-        console.error("Error fetching books:", error);
-        setBooks([]); // Ensure books is always an array
-      }
-    };
+       const data = await response.json();
+       if (!data.success) throw new Error("Failed to fetch books");
+
+       // Fetch reviews for each book
+       const booksWithReviews = await Promise.all(
+         data.data.map(async (book) => {
+           const reviewResponse = await fetch(
+             `http://localhost:5000/api/reviews?bookId=${book._id}`
+           );
+           if (!reviewResponse.ok) return book; // Keep book as is if reviews fail
+
+           const reviewData = await reviewResponse.json();
+           return {
+             ...book,
+             reviews: reviewData.success ? reviewData.data : [],
+           };
+         })
+       );
+
+       setBooks(booksWithReviews);
+     } catch (error) {
+       console.error("Error fetching books:", error);
+     }
+   };
+
 
     fetchBooks();
   }, []);
 
-
+  // Fetch a single book by ID
+  const fetchBookById = async (bookId: string) => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/books/${bookId}`);
+      if (!response.ok) throw new Error("Failed to fetch book");
+      const data = await response.json();
+      console.log(data.data);
+      return data.data; // Ensure we return the book object from API response
+    } catch (error) {
+      console.error("Error fetching book:", error);
+      return null;
+    }
+  };
 
   // Derived state
   const featuredBooks = books.filter((book) => book.featured);
@@ -101,32 +124,34 @@ export const BookProvider: React.FC<{ children: ReactNode }> = ({
   // Add review and update database
   const addReview = async (
     bookId: string,
-    review: Omit<Review, "id" | "date">
+    review: Omit<Review, "_id" | "date">
   ) => {
-    const newReview: Review = {
+    const reviewPayload = {
       ...review,
-      id: Math.random().toString(36).substring(2, 9),
+      bookId,
       date: new Date().toISOString(),
     };
 
     try {
-      const response = await fetch(
-        `http://localhost:5000/api/books/${bookId}/reviews`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(newReview),
-        }
-      );
+      const response = await fetch(`http://localhost:5000/api/reviews/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(reviewPayload),
+      });
 
       if (!response.ok) throw new Error("Failed to add review");
 
+      const data = await response.json();
+      if (!data.success) throw new Error("Failed to add review");
+
+      const newReview = data.data; // Get the new review from the response
+
       setBooks((prevBooks) =>
         prevBooks.map((book) =>
-          book.id === bookId
+          book._id === bookId
             ? {
                 ...book,
-                reviews: [newReview, ...book.reviews],
+                reviews: [newReview, ...book.reviews], // Add new review
                 rating: calculateAverageRating([...book.reviews, newReview]),
               }
             : book
@@ -136,6 +161,30 @@ export const BookProvider: React.FC<{ children: ReactNode }> = ({
       console.error("Error adding review:", error);
     }
   };
+
+  const submitReview = async (reviewData) => {
+    try {
+      const response = await fetch(`/api/reviews`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(reviewData), // Ensure bookId is sent
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to submit review");
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error submitting review:", error);
+      throw error;
+    }
+  };
+
+
+
 
   // Calculate new average rating
   const calculateAverageRating = (reviews: Review[]): number => {
@@ -171,6 +220,8 @@ export const BookProvider: React.FC<{ children: ReactNode }> = ({
         addReview,
         getBook,
         getAllGenres,
+        fetchBookById,
+        submitReview,
       }}
     >
       {children}

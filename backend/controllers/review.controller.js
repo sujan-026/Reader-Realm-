@@ -13,6 +13,31 @@ export const getReview = async (req, res) => {
   }
 };
 
+// Get a review by ID
+export const getReviewById = async (req, res) => {
+  const { id } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Invalid review ID" });
+  }
+
+  try {
+    const review = await Review.findById(id);
+    if (!review) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Review not found" });
+    }
+
+    res.status(200).json({ success: true, data: review });
+  } catch (error) {
+    console.error("Error fetching review:", error.message);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
 // Create a new review
 export const createReview = async (req, res) => {
   try {

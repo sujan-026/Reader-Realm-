@@ -43,7 +43,7 @@ const Books = () => {
               </p>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 gap-4">
                 {filteredBooks.map((book, index) => (
-                  <BookCard key={book.id} book={book} index={index} />
+                  <BookCard key={book._id} book={book} index={index} />
                 ))}
               </div>
             </>

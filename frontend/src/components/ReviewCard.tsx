@@ -1,8 +1,7 @@
-
-import React from 'react';
-import { StarRating } from './StarRating';
-import { Review } from '../context/BookContext';
-import { formatDistanceToNow } from 'date-fns';
+import React, { useEffect, useState } from "react";
+import { StarRating } from "./StarRating";
+import { Review } from "../context/BookContext";
+import { formatDistanceToNow } from "date-fns";
 
 type ReviewCardProps = {
   review: Review;
@@ -10,38 +9,84 @@ type ReviewCardProps = {
 };
 
 export const ReviewCard: React.FC<ReviewCardProps> = ({ review, index }) => {
-  const formattedDate = formatDistanceToNow(new Date(review.date), { addSuffix: true });
+  const [fetchedReview, setFetchedReview] = useState<Review | null>(null);
+
+  // Debugging: Check raw review details
+  console.log("Raw Review ID:", review);
+
+  useEffect(() => {
+    const fetchReview = async () => {
+      try {
+        const response = await fetch(
+          `http://localhost:5000/api/reviews/${review}`
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch review");
+        }
+
+        const data = await response.json();
+        if (!data.success) {
+          throw new Error("Error fetching review");
+        }
+
+        setFetchedReview(data.data); // Update state with fetched review
+      } catch (error) {
+        console.error("Error fetching review:", error);
+      }
+    };
+
+    fetchReview();
+  }, [review]); // Fetch review when the ID changes
+
+  // Use fetched review if available, otherwise fallback to props
+  const displayedReview = fetchedReview || review;
+
+  // Parse and format date safely
+  const parsedDate = displayedReview.date
+    ? new Date(displayedReview.date)
+    : null;
+  const formattedDate =
+    parsedDate && !isNaN(parsedDate.getTime())
+      ? formatDistanceToNow(parsedDate, { addSuffix: true })
+      : "Unknown date";
 
   return (
-    <div 
+    <div
       className="review-card p-5 rounded-lg bg-card shadow-sm mb-4"
-      style={{ '--index': index } as React.CSSProperties}
+      style={{ "--index": index } as React.CSSProperties}
     >
       <div className="flex items-start">
         <div className="flex-shrink-0 mr-4">
           <div className="w-10 h-10 rounded-full overflow-hidden">
-            {review.userAvatar ? (
-              <img 
-                src={review.userAvatar} 
-                alt={review.userName} 
+            {displayedReview.userAvatar ? (
+              <img
+                src={displayedReview.userAvatar}
+                alt={displayedReview.userName}
                 className="w-full h-full object-cover"
               />
             ) : (
               <div className="w-full h-full bg-primary/10 flex items-center justify-center text-primary font-medium">
-                {review.userName.charAt(0)}
+                {displayedReview.userName
+                  ? displayedReview.userName.charAt(0)
+                  : "?"}
               </div>
             )}
           </div>
         </div>
         <div className="flex-1">
           <div className="flex items-center justify-between">
-            <h4 className="font-medium">{review.userName}</h4>
-            <span className="text-xs text-muted-foreground">{formattedDate}</span>
+            <h4 className="font-medium">{displayedReview.userName}</h4>
+            <span className="text-xs text-muted-foreground">
+              {formattedDate}
+            </span>
           </div>
           <div className="mt-1">
-            <StarRating rating={review.rating} size="sm" />
+            <StarRating rating={displayedReview.rating} size="sm" />
           </div>
-          <p className="mt-2 text-sm text-muted-foreground">{review.text}</p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {displayedReview.text}
+          </p>
         </div>
       </div>
     </div>

@@ -14,7 +14,7 @@ export const BookCard: React.FC<BookCardProps> = ({ book, index = 0 }) => {
 
   return (
     <Link 
-      to={`/books/${book.id}`}
+      to={`/books/${book._id}`}
       className="book-card group block overflow-hidden rounded-lg bg-white shadow hover:shadow-md transition-all duration-300"
       style={{ animationDelay: `${index * 100}ms` }}
     >

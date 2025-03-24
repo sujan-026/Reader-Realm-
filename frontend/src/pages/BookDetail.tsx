@@ -1,63 +1,76 @@
-
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Layout } from '../components/Layout';
-import { StarRating } from '../components/StarRating';
-import { ReviewCard } from '../components/ReviewCard';
-import { useBooks } from '../context/BookContext';
-import { 
-  Calendar, 
-  Tag, 
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { Layout } from "../components/Layout";
+import { StarRating } from "../components/StarRating";
+import { ReviewCard } from "../components/ReviewCard";
+import { useBooks } from "../context/BookContext";
+import {
+  Calendar,
+  Tag,
   ArrowLeft,
   ThumbsUp,
   AlertCircle,
-  MessageSquare 
-} from 'lucide-react';
-import { useToast } from '../hooks/use-toast';
+  MessageSquare,
+} from "lucide-react";
+import { useToast } from "../hooks/use-toast";
 
 const BookDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { getBook, addReview } = useBooks();
+  const { fetchBookById, submitReview, updateReview } = useBooks();
   const { toast } = useToast();
-  const [book, setBook] = useState(getBook(id!));
-  const [userReview, setUserReview] = useState('');
+
+  const [book, setBook] = useState<Book | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [userReview, setUserReview] = useState("");
   const [userRating, setUserRating] = useState(5);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
 
   useEffect(() => {
-    // Update book when it changes in context
-    setBook(getBook(id!));
-    // Scroll to top when navigating to a new book
+    const loadBook = async () => {
+      setLoading(true);
+      try {
+        const fetchedBook = await fetchBookById(id!);
+        setBook(fetchedBook);
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to fetch book details.",
+          variant: "destructive",
+        });
+        navigate("/books");
+      }
+      setLoading(false);
+    };
+
+    loadBook();
     window.scrollTo(0, 0);
-  }, [id, getBook]);
+  }, [id, fetchBookById, navigate, toast]);
 
-  // If book not found, navigate back
-  useEffect(() => {
-    if (!book) {
-      toast({
-        title: "Book not found",
-        description: "The book you're looking for doesn't exist.",
-        variant: "destructive",
-      });
-      navigate('/books');
-    }
-  }, [book, navigate, toast]);
+  if (loading) {
+    return (
+      <Layout>
+        <div className="text-center py-20 text-xl">Loading book details...</div>
+      </Layout>
+    );
+  }
 
-  if (!book) return null;
+  if (!book) {
+    return null;
+  }
 
-  const handleReviewSubmit = (e: React.FormEvent) => {
+  const handleReviewSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Simulate network request
-    setTimeout(() => {
-      addReview(book.id, {
-        userId: 'guest-user',
-        userName: 'Guest Reader',
+    try {
+      await submitReview({
+        bookId: book._id, // Ensure bookId is included
+        userId: "guest-user",
+        userName: "Guest Reader",
         rating: userRating,
-        text: userReview
+        text: userReview,
       });
 
       toast({
@@ -65,11 +78,23 @@ const BookDetail = () => {
         description: "Your review has been added successfully.",
       });
 
-      setUserReview('');
+      setUserReview("");
       setUserRating(5);
-      setIsSubmitting(false);
-    }, 800);
+
+      // Refresh book details after submitting review
+      const updatedBook = await fetchBookById(id!);
+      setBook(updatedBook);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to submit review.",
+        variant: "destructive",
+      });
+    }
+
+    setIsSubmitting(false);
   };
+
 
   // Group reviews by recent and older
   const recentReviews = book.reviews.slice(0, 3);
@@ -77,7 +102,7 @@ const BookDetail = () => {
 
   return (
     <Layout>
-      <button 
+      <button
         onClick={() => navigate(-1)}
         className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-foreground mb-6 transition-colors"
       >
@@ -88,12 +113,20 @@ const BookDetail = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         <div className="md:col-span-1">
           <div className="sticky top-24">
-            <div 
-              className={`aspect-[2/3] overflow-hidden rounded-lg shadow-md ${imageLoaded ? '' : 'animate-pulse bg-muted'}`}
+            <div
+              className={`aspect-[2/3] overflow-hidden rounded-lg shadow-md ${
+                imageLoaded ? "" : "animate-pulse bg-muted"
+              }`}
             >
               <div
-                className={`blur-load h-full w-full ${imageLoaded ? 'loaded' : ''}`}
-                style={{ backgroundImage: book.blurImage ? `url(${book.blurImage})` : undefined }}
+                className={`blur-load h-full w-full ${
+                  imageLoaded ? "loaded" : ""
+                }`}
+                style={{
+                  backgroundImage: book.blurImage
+                    ? `url(${book.blurImage})`
+                    : undefined,
+                }}
               >
                 <img
                   src={book.coverImage}
@@ -109,11 +142,14 @@ const BookDetail = () => {
                 <div className="flex items-center">
                   <Calendar className="h-4 w-4 text-muted-foreground mr-2" />
                   <span className="text-sm text-muted-foreground">
-                    {new Date(book.publicationDate).toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    })}
+                    {new Date(book.publicationDate).toLocaleDateString(
+                      "en-US",
+                      {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      }
+                    )}
                   </span>
                 </div>
               </div>
@@ -121,7 +157,7 @@ const BookDetail = () => {
               <div>
                 <h3 className="text-sm font-medium mb-2">Genres</h3>
                 <div className="flex flex-wrap gap-2">
-                  {book.genres.map(genre => (
+                  {book.genres.map((genre) => (
                     <div
                       key={genre}
                       className="inline-flex items-center rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium"
@@ -137,33 +173,34 @@ const BookDetail = () => {
         </div>
 
         <div className="md:col-span-2">
-          <h1 className="text-3xl font-bold tracking-tight md:text-4xl animate-fade-in">
+          <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
             {book.title}
           </h1>
-          <p className="mt-2 text-xl font-medium animate-fade-in" style={{ animationDelay: '100ms' }}>
-            by {book.author}
-          </p>
-          
-          <div className="mt-3 flex items-center animate-fade-in" style={{ animationDelay: '200ms' }}>
+          <p className="mt-2 text-xl font-medium">by {book.author}</p>
+
+          <div className="mt-3 flex items-center">
             <StarRating rating={book.rating} size="lg" />
             <span className="ml-2 text-muted-foreground">
               {book.rating.toFixed(1)} ({book.reviews.length} reviews)
             </span>
           </div>
 
-          <div className="mt-6 prose prose-lg max-w-none animate-fade-in" style={{ animationDelay: '300ms' }}>
+          <div className="mt-6 prose prose-lg max-w-none">
             <p className="text-muted-foreground">{book.description}</p>
           </div>
 
-          <div className="mt-10 animate-fade-in" style={{ animationDelay: '400ms' }}>
+          <div className="mt-10">
             <h2 className="text-2xl font-bold mb-6 flex items-center">
               <MessageSquare className="mr-2 h-5 w-5" />
               Reviews
             </h2>
 
-            <form onSubmit={handleReviewSubmit} className="mb-10 bg-card p-6 rounded-lg shadow-sm">
+            <form
+              onSubmit={handleReviewSubmit}
+              className="mb-10 bg-card p-6 rounded-lg shadow-sm"
+            >
               <h3 className="text-lg font-medium mb-4">Write a Review</h3>
-              
+
               <div className="mb-4">
                 <label className="block text-sm font-medium mb-2">Rating</label>
                 <div className="flex gap-4 items-center">
@@ -173,62 +210,46 @@ const BookDetail = () => {
                     onChange={(e) => setUserRating(Number(e.target.value))}
                     className="rounded-md border-input bg-transparent px-3 py-1 text-sm shadow-sm"
                   >
-                    {[1, 2, 3, 4, 5].map(num => (
-                      <option key={num} value={num}>{num}</option>
+                    {[1, 2, 3, 4, 5].map((num) => (
+                      <option key={num} value={num}>
+                        {num}
+                      </option>
                     ))}
                   </select>
                 </div>
               </div>
-              
-              <div className="mb-4">
-                <label htmlFor="review" className="block text-sm font-medium mb-2">
-                  Your Review
-                </label>
-                <textarea
-                  id="review"
-                  value={userReview}
-                  onChange={(e) => setUserReview(e.target.value)}
-                  rows={4}
-                  placeholder="Share your thoughts about this book..."
-                  className="w-full rounded-md border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                  required
-                />
-              </div>
-              
+
+              <textarea
+                value={userReview}
+                onChange={(e) => setUserReview(e.target.value)}
+                rows={4}
+                placeholder="Share your thoughts..."
+                className="w-full rounded-md border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                required
+              />
+
               <button
                 type="submit"
                 disabled={isSubmitting || !userReview.trim()}
-                className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
+                className="mt-4 inline-flex items-center bg-primary px-4 py-2 text-sm font-medium text-primary-foreground rounded-md"
               >
-                {isSubmitting ? 'Submitting...' : 'Submit Review'}
+                {isSubmitting ? "Submitting..." : "Submit Review"}
                 <ThumbsUp className="ml-2 h-4 w-4" />
               </button>
             </form>
 
             {recentReviews.length > 0 ? (
               <div className="space-y-2">
-                {recentReviews.map((review, index) => (
-                  <ReviewCard key={review.id} review={review} index={index} />
+                {recentReviews.map((review) => (
+                  <ReviewCard
+                    key={review._id || review.userId}
+                    review={review}
+                  />
                 ))}
-                
-                {olderReviews.length > 0 && (
-                  <>
-                    <h3 className="text-lg font-medium mt-8 mb-4">Older Reviews</h3>
-                    {olderReviews.map((review, index) => (
-                      <ReviewCard 
-                        key={review.id} 
-                        review={review} 
-                        index={index + recentReviews.length} 
-                      />
-                    ))}
-                  </>
-                )}
               </div>
             ) : (
-              <div className="text-center p-8 bg-muted/50 rounded-lg border border-border">
-                <AlertCircle className="h-10 w-10 mx-auto mb-3 text-muted-foreground" />
-                <h3 className="text-lg font-medium mb-1">No reviews yet</h3>
-                <p className="text-muted-foreground mb-4">Be the first to review this book</p>
+              <div className="text-center py-10 text-muted-foreground">
+                No reviews yet.
               </div>
             )}
           </div>
