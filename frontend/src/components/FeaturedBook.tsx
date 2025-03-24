@@ -14,7 +14,7 @@ export const FeaturedBook: React.FC<FeaturedBookProps> = ({ book }) => {
 
   return (
     <Link
-      to={`/books/${book.id}`}
+      to={`/books/${book._id}`}
       className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-background to-secondary shadow-md hover:shadow-lg transition-all duration-300"
     >
       <div className="flex flex-col-reverse md:flex-row">

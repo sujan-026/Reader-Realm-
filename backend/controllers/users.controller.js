@@ -1,8 +1,19 @@
 import User from "../models/Users.js";
 import mongoose from "mongoose";
 
+// Get all users 
+export const getUsers = async (req, res) => {
+  try {
+    const users = await User.find();
+    res.status(200).json({ success: true, data: users });
+  } catch (error) {
+    console.error("Error fetching users:", error.message);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
 // Get user by ID
-export const getUser = async (req, res) => {
+export const getUserById = async (req, res) => {
   const { id } = req.params;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {

@@ -57,41 +57,47 @@ export const BookProvider: React.FC<{ children: ReactNode }> = ({
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
 
-  // Fetch books from API
   useEffect(() => {
-   const fetchBooks = async () => {
-     try {
-       const response = await fetch(`http://localhost:5000/api/books`);
-       if (!response.ok) throw new Error("Failed to fetch books");
+  const fetchBooks = async () => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/books`);
+      if (!response.ok) throw new Error("Failed to fetch books");
 
-       const data = await response.json();
-       if (!data.success) throw new Error("Failed to fetch books");
+      const data = await response.json();
+      if (!data.success) throw new Error("Failed to fetch books");
 
-       // Fetch reviews for each book
-       const booksWithReviews = await Promise.all(
-         data.data.map(async (book) => {
-           const reviewResponse = await fetch(
-             `http://localhost:5000/api/reviews?bookId=${book._id}`
-           );
-           if (!reviewResponse.ok) return book; // Keep book as is if reviews fail
+      // Fetch reviews for each book individually
+      const booksWithReviews = await Promise.all(
+        data.data.map(async (book) => {
+          const reviewsWithDetails = await Promise.all(
+            book.reviews.map(async (reviewId: string) => {
+              const reviewResponse = await fetch(
+                `http://localhost:5000/api/review/${reviewId}`
+              );
+              if (!reviewResponse.ok) return null; // Handle failed requests
 
-           const reviewData = await reviewResponse.json();
-           return {
-             ...book,
-             reviews: reviewData.success ? reviewData.data : [],
-           };
-         })
-       );
+              const reviewData = await reviewResponse.json();
+              return reviewData.success ? reviewData.data : null;
+            })
+          );
 
-       setBooks(booksWithReviews);
-     } catch (error) {
-       console.error("Error fetching books:", error);
-     }
-   };
+          return {
+            ...book,
+            reviews: reviewsWithDetails.filter((review) => review !== null), // Remove failed requests
+          };
+        })
+      );
+
+      setBooks(booksWithReviews);
+    } catch (error) {
+      console.error("Error fetching books:", error);
+    }
+  };
+
+  fetchBooks();
+}, []);
 
 
-    fetchBooks();
-  }, []);
 
   // Fetch a single book by ID
   const fetchBookById = async (bookId: string) => {

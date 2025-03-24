@@ -42,7 +42,7 @@ const Index = () => {
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
           {recentBooks.map((book, index) => (
-            <BookCard key={book.id} book={book} index={index} />
+            <BookCard key={book._id} book={book} index={index} />
           ))}
         </div>
       </section>

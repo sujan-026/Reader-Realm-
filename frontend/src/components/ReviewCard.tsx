@@ -12,13 +12,14 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({ review, index }) => {
   const [fetchedReview, setFetchedReview] = useState<Review | null>(null);
 
   // Debugging: Check raw review details
-  console.log("Raw Review ID:", review);
+  const reviewId = Object.values(review).join("");
+  console.log("Raw Review:", reviewId);
 
   useEffect(() => {
     const fetchReview = async () => {
       try {
         const response = await fetch(
-          `http://localhost:5000/api/reviews/${review}`
+          `http://localhost:5000/api/reviews/${reviewId}`
         );
 
         if (!response.ok) {

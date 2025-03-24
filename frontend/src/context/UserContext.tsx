@@ -7,7 +7,6 @@ import React, {
 } from "react";
 import { toast } from "sonner";
 
-// User types
 export type UserRole = "user" | "admin";
 
 export interface User {
@@ -41,24 +40,39 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [likedBooks, setLikedBooks] = useState<string[]>([]);
 
+  // ✅ Ensure user is loaded from localStorage before setting isLoading to false
   useEffect(() => {
-    // Check for saved user in localStorage
-    const savedUser = localStorage.getItem("user");
-    const savedLikedBooks = localStorage.getItem("likedBooks");
+    const loadUserFromStorage = async () => {
+      const savedUser = localStorage.getItem("user");
+      const savedLikedBooks = localStorage.getItem("likedBooks");
 
-    if (savedUser) {
-      console.log("Loaded user from localStorage:", JSON.parse(savedUser));
-      setUser(JSON.parse(savedUser));
-    }
+      if (savedUser) {
+        try {
+          const parsedUser = JSON.parse(savedUser);
+          console.log("Loaded user from localStorage:", parsedUser);
+          setUser(parsedUser);
+        } catch (error) {
+          console.error("Error parsing user from localStorage:", error);
+          localStorage.removeItem("user");
+        }
+      }
 
-    if (savedLikedBooks) {
-      setLikedBooks(JSON.parse(savedLikedBooks));
-    }
+      if (savedLikedBooks) {
+        try {
+          setLikedBooks(JSON.parse(savedLikedBooks));
+        } catch (error) {
+          console.error("Error parsing likedBooks:", error);
+          localStorage.removeItem("likedBooks");
+        }
+      }
 
-    setIsLoading(false);
+      setIsLoading(false); // Set loading to false **after** user is loaded
+    };
+
+    loadUserFromStorage();
   }, []);
 
-  // Save user to localStorage whenever it changes
+  // ✅ Save user to localStorage whenever it changes
   useEffect(() => {
     if (user) {
       console.log("Saving user to localStorage:", user);
@@ -69,7 +83,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
     }
   }, [user]);
 
-  // Save liked books to localStorage whenever they change
+  // ✅ Save liked books to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem("likedBooks", JSON.stringify(likedBooks));
   }, [likedBooks]);
@@ -130,7 +144,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
       console.log("Signup response data:", data);
 
       if (response.ok) {
-        setUser(data.data); // Fix: Correctly set user from API response
+        setUser(data.data);
         toast.success("Account created successfully!");
         return true;
       } else {
@@ -236,7 +250,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
         isBookLiked,
       }}
     >
-      {children}
+      {!isLoading && children} {/* Only render children after loading user */}
     </UserContext.Provider>
   );
 };

@@ -1,5 +1,3 @@
-
-import React from 'react';
 import { Layout } from '../components/Layout';
 import { BookCard } from '../components/BookCard';
 import { useBooks } from '../context/BookContext';
@@ -14,12 +12,12 @@ const Profile = () => {
   const { user, isAuthenticated, likedBooks } = useUser();
   
   // Get liked books
-  const userLikedBooks = books.filter(book => likedBooks.includes(book.id));
+  const userLikedBooks = books.filter(book => likedBooks.includes(book._id));
   
   // Simulate read books and reviews for the user profile
   const readBooks = books.slice(0, 3);
   const userReviews = books.slice(0, 2).flatMap(book => 
-    book.reviews.slice(0, 1).map(review => ({ bookId: book.id, book, ...review }))
+    book.reviews.slice(0, 1).map(review => ({ bookId: book._id, book, ...review }))
   );
 
   // If user is not authenticated, show login prompt
@@ -97,7 +95,7 @@ const Profile = () => {
             {readBooks.length > 0 ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                 {readBooks.map((book, index) => (
-                  <BookCard key={book.id} book={book} index={index} />
+                  <BookCard key={book._id} book={book} index={index} />
                 ))}
               </div>
             ) : (
@@ -115,7 +113,7 @@ const Profile = () => {
             {userLikedBooks.length > 0 ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                 {userLikedBooks.map((book, index) => (
-                  <BookCard key={book.id} book={book} index={index} />
+                  <BookCard key={book._id} book={book} index={index} />
                 ))}
               </div>
             ) : (

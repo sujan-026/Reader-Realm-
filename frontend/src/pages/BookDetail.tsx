@@ -14,10 +14,31 @@ import {
 } from "lucide-react";
 import { useToast } from "../hooks/use-toast";
 
+interface Review {
+  _id?: string;
+  userId: string;
+  userName: string;
+  rating: number;
+  text: string;
+}
+
+interface Book {
+  _id: string;
+  title: string;
+  author: string;
+  description: string;
+  coverImage: string;
+  blurImage?: string;
+  publicationDate: string;
+  genres: string[];
+  rating: number;
+  reviews: Review[];
+}
+
 const BookDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { fetchBookById, submitReview, updateReview } = useBooks();
+  const { fetchBookById, submitReview } = useBooks();
   const { toast } = useToast();
 
   const [book, setBook] = useState<Book | null>(null);
@@ -66,7 +87,6 @@ const BookDetail = () => {
 
     try {
       await submitReview({
-        bookId: book._id, // Ensure bookId is included
         userId: "guest-user",
         userName: "Guest Reader",
         rating: userRating,
@@ -205,7 +225,7 @@ const BookDetail = () => {
                 <label className="block text-sm font-medium mb-2">Rating</label>
                 <div className="flex gap-4 items-center">
                   <StarRating rating={userRating} />
-                  <select
+                  <select aria-label="Rating"
                     value={userRating}
                     onChange={(e) => setUserRating(Number(e.target.value))}
                     className="rounded-md border-input bg-transparent px-3 py-1 text-sm shadow-sm"
@@ -240,10 +260,11 @@ const BookDetail = () => {
 
             {recentReviews.length > 0 ? (
               <div className="space-y-2">
-                {recentReviews.map((review) => (
+                {recentReviews.map((review, index) => (
                   <ReviewCard
                     key={review._id || review.userId}
-                    review={review}
+                    review={{ ...review, id: review._id || review.userId, date: "" }}
+                    index={index}
                   />
                 ))}
               </div>

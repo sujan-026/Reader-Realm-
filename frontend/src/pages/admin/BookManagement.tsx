@@ -32,9 +32,21 @@ const BookManagement = () => {
     book.author.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleDeleteBook = (bookId: string) => {
-    // In a real application, this would call a delete API
-    toast.success('Book deleted successfully');
+  const handleDeleteBook = async (bookId: string) => {
+    console.log(bookId);
+    try {
+      const response = await fetch(`http://localhost:5000/api/book/${bookId}`, {
+        method: "DELETE",
+      });
+      if (response.ok) {
+        toast.success('Book deleted successfully');
+        // Optionally, update the books state here if needed.
+      } else {
+        toast.error('Failed to delete book');
+      }
+    } catch (error) {
+      toast.error('Failed to delete book');
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -86,7 +98,7 @@ const BookManagement = () => {
             <TableBody>
               {filteredBooks.length > 0 ? (
                 filteredBooks.map((book) => (
-                  <TableRow key={book.id}>
+                  <TableRow key={book._id}>
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <div className="h-12 w-8 overflow-hidden rounded">
@@ -117,13 +129,13 @@ const BookManagement = () => {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <Link to={`/books/${book.id}`}>
+                          <Link to={`/books/${book._id}`}>
                             <DropdownMenuItem>
                               <Book className="mr-2 h-4 w-4" />
                               View
                             </DropdownMenuItem>
                           </Link>
-                          <Link to={`/admin/books/edit/${book.id}`}>
+                          <Link to={`/admin/books/edit/${book._id}`}>
                             <DropdownMenuItem>
                               <Edit className="mr-2 h-4 w-4" />
                               Edit
@@ -131,7 +143,7 @@ const BookManagement = () => {
                           </Link>
                           <DropdownMenuItem 
                             className="text-destructive focus:text-destructive"
-                            onClick={() => handleDeleteBook(book.id)}
+                            onClick={() => handleDeleteBook(book._id)}
                           >
                             <Trash2 className="mr-2 h-4 w-4" />
                             Delete

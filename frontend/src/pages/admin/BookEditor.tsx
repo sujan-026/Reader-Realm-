@@ -7,13 +7,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -48,7 +41,7 @@ const BookEditor = () => {
     
     // If editing an existing book, load its data
     if (!isNewBook && id) {
-      const book = books.find(b => b.id === id);
+      const book = books.find(b => b._id === id);
       if (book) {
         setFormData({
           title: book.title,
@@ -97,20 +90,39 @@ const BookEditor = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
+
+    const url = isNewBook
+      ? "http://localhost:5000/api/books"
+      : `http://localhost:5000/api/books/${id}`;
+
+    const method = isNewBook ? "POST" : "PUT";
+
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // In a real app, would call an API to save the book
-      toast.success(isNewBook ? 'Book created successfully' : 'Book updated successfully');
-      navigate('/admin/books');
+      const response = await fetch(url, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to save book: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      toast.success(
+        isNewBook ? "Book created successfully" : "Book updated successfully"
+      );
+      navigate("/admin/books");
     } catch (error) {
-      toast.error('Failed to save book');
+      console.error("Error saving book:", error);
+      toast.error("Failed to save book");
     } finally {
       setIsLoading(false);
     }
   };
+
 
   return (
     <AdminLayout>
