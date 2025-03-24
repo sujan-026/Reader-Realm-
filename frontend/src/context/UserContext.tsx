@@ -1,8 +1,14 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { toast } from 'sonner';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
+import { toast } from "sonner";
 
 // User types
-export type UserRole = 'user' | 'admin';
+export type UserRole = "user" | "admin";
 
 export interface User {
   id: string;
@@ -11,26 +17,6 @@ export interface User {
   avatar?: string;
   role: UserRole;
 }
-
-// Mock users for demonstration
-const MOCK_USERS = [
-  {
-    id: 'admin-1',
-    email: 'admin@example.com',
-    password: 'admin123', // In a real app, this would be hashed
-    name: 'Admin User',
-    avatar: 'https://randomuser.me/api/portraits/men/32.jpg',
-    role: 'admin' as UserRole
-  },
-  {
-    id: 'user-1',
-    email: 'user@example.com',
-    password: 'user123', // In a real app, this would be hashed
-    name: 'Regular User',
-    avatar: 'https://randomuser.me/api/portraits/women/44.jpg',
-    role: 'user' as UserRole
-  }
-];
 
 interface AuthContextType {
   user: User | null;
@@ -48,168 +34,183 @@ interface AuthContextType {
 
 const UserContext = createContext<AuthContextType | undefined>(undefined);
 
-export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const UserProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [likedBooks, setLikedBooks] = useState<string[]>([]);
 
   useEffect(() => {
     // Check for saved user in localStorage
-    const savedUser = localStorage.getItem('user');
-    const savedLikedBooks = localStorage.getItem('likedBooks');
-    
+    const savedUser = localStorage.getItem("user");
+    const savedLikedBooks = localStorage.getItem("likedBooks");
+
     if (savedUser) {
+      console.log("Loaded user from localStorage:", JSON.parse(savedUser));
       setUser(JSON.parse(savedUser));
     }
-    
+
     if (savedLikedBooks) {
       setLikedBooks(JSON.parse(savedLikedBooks));
     }
-    
+
     setIsLoading(false);
   }, []);
 
   // Save user to localStorage whenever it changes
   useEffect(() => {
     if (user) {
-      localStorage.setItem('user', JSON.stringify(user));
+      console.log("Saving user to localStorage:", user);
+      localStorage.setItem("user", JSON.stringify(user));
     } else {
-      localStorage.removeItem('user');
+      console.log("Removing user from localStorage");
+      localStorage.removeItem("user");
     }
   }, [user]);
 
   // Save liked books to localStorage whenever they change
   useEffect(() => {
-    localStorage.setItem('likedBooks', JSON.stringify(likedBooks));
+    localStorage.setItem("likedBooks", JSON.stringify(likedBooks));
   }, [likedBooks]);
 
+  // ✅ LOGIN FUNCTION
   const login = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
-    
+
     try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Find user with matching credentials
-      const matchedUser = MOCK_USERS.find(
-        u => u.email.toLowerCase() === email.toLowerCase() && u.password === password
-      );
-      
-      if (matchedUser) {
-        const { password: _, ...userWithoutPassword } = matchedUser;
-        setUser(userWithoutPassword);
-        toast.success('Successfully logged in!');
+      const response = await fetch("http://localhost:5000/api/users/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+      console.log("Login response data:", data);
+
+      if (response.ok) {
+        setUser(data.data); // Fix: Correctly set user from API response
+        toast.success("Successfully logged in!");
         return true;
       } else {
-        toast.error('Invalid email or password');
+        toast.error(data.message || "Invalid email or password");
         return false;
       }
     } catch (error) {
-      toast.error('Login failed. Please try again.');
+      toast.error("Login failed. Please try again.");
       return false;
     } finally {
       setIsLoading(false);
     }
   };
 
+  // ✅ LOGOUT FUNCTION
   const logout = () => {
     setUser(null);
-    toast.success('Successfully logged out');
+    localStorage.removeItem("user");
+    toast.success("Successfully logged out");
   };
 
-  const signUp = async (name: string, email: string, password: string): Promise<boolean> => {
+  // ✅ SIGNUP FUNCTION
+  const signUp = async (
+    name: string,
+    email: string,
+    password: string
+  ): Promise<boolean> => {
     setIsLoading(true);
-    
-    try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Check if user already exists
-      if (MOCK_USERS.some(u => u.email.toLowerCase() === email.toLowerCase())) {
-        toast.error('User with this email already exists');
-        return false;
-      }
-      
-      // In a real app, we would create the user in the database
-      // For now, we'll just log them in
-      const newUser: User = {
-        id: `user-${Date.now()}`,
-        name,
-        email,
-        role: 'user'
-      };
-      
-      setUser(newUser);
-      toast.success('Account created successfully!');
-      return true;
-    } catch (error) {
-      toast.error('Sign up failed. Please try again.');
-      return false;
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
-  const loginWithGoogle = async (): Promise<boolean> => {
-    setIsLoading(true);
-    
     try {
-      // Simulate Google authentication
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const googleUser: User = {
-        id: `google-user-${Date.now()}`,
-        name: 'Google User',
-        email: 'google.user@example.com',
-        avatar: 'https://randomuser.me/api/portraits/women/68.jpg',
-        role: 'user'
-      };
-      
-      setUser(googleUser);
-      toast.success('Successfully logged in with Google!');
-      return true;
-    } catch (error) {
-      toast.error('Google login failed. Please try again.');
-      return false;
-    } finally {
-      setIsLoading(false);
-    }
-  };
+      const response = await fetch("http://localhost:5000/api/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password, role: "user" }),
+      });
 
-  const resetPassword = async (email: string): Promise<boolean> => {
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const userExists = MOCK_USERS.some(
-        u => u.email.toLowerCase() === email.toLowerCase()
-      );
-      
-      if (userExists) {
-        toast.success('Password reset link sent to your email');
+      const data = await response.json();
+      console.log("Signup response data:", data);
+
+      if (response.ok) {
+        setUser(data.data); // Fix: Correctly set user from API response
+        toast.success("Account created successfully!");
         return true;
       } else {
-        toast.error('No account found with this email');
+        toast.error(data.message || "Sign-up failed");
         return false;
       }
     } catch (error) {
-      toast.error('Password reset failed. Please try again.');
+      toast.error("Sign-up failed. Please try again.");
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // ✅ GOOGLE LOGIN FUNCTION
+  const loginWithGoogle = async (): Promise<boolean> => {
+    setIsLoading(true);
+
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      const googleUser: User = {
+        id: `google-user-${Date.now()}`,
+        name: "Google User",
+        email: "google.user@example.com",
+        avatar: "https://randomuser.me/api/portraits/women/68.jpg",
+        role: "user",
+      };
+
+      setUser(googleUser);
+      toast.success("Successfully logged in with Google!");
+      return true;
+    } catch (error) {
+      toast.error("Google login failed. Please try again.");
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // ✅ RESET PASSWORD FUNCTION
+  const resetPassword = async (email: string): Promise<boolean> => {
+    try {
+      const response = await fetch(
+        "http://localhost:5000/api/users/reset-password",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success("Password reset link sent to your email");
+        return true;
+      } else {
+        toast.error(data.message || "No account found with this email");
+        return false;
+      }
+    } catch (error) {
+      toast.error("Password reset failed. Please try again.");
       return false;
     }
   };
 
+  // ✅ BOOK LIKING FUNCTIONALITY
   const toggleLikeBook = (bookId: string) => {
     if (!user) {
-      toast.error('Please log in to like books');
+      toast.error("Please log in to like books");
       return;
     }
-    
-    setLikedBooks(prev => {
+
+    setLikedBooks((prev) => {
       if (prev.includes(bookId)) {
-        toast.success('Book removed from favorites');
-        return prev.filter(id => id !== bookId);
+        toast.success("Book removed from favorites");
+        return prev.filter((id) => id !== bookId);
       } else {
-        toast.success('Book added to favorites');
+        toast.success("Book added to favorites");
         return [...prev, bookId];
       }
     });
@@ -232,7 +233,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         resetPassword,
         likedBooks,
         toggleLikeBook,
-        isBookLiked
+        isBookLiked,
       }}
     >
       {children}
@@ -243,7 +244,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 export const useUser = (): AuthContextType => {
   const context = useContext(UserContext);
   if (!context) {
-    throw new Error('useUser must be used within a UserProvider');
+    throw new Error("useUser must be used within a UserProvider");
   }
   return context;
 };
