@@ -13,17 +13,23 @@ export const BookCard: React.FC<BookCardProps> = ({ book, index = 0 }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
 
   return (
-    <Link 
+    <Link
       to={`/books/${book._id}`}
       className="book-card group block overflow-hidden rounded-lg bg-white shadow hover:shadow-md transition-all duration-300"
       style={{ animationDelay: `${index * 100}ms` }}
     >
-      <div 
-        className={`relative aspect-[2/3] overflow-hidden ${imageLoaded ? '' : 'animate-pulse bg-muted'}`}
+      <div
+        className={`relative aspect-[2/3] overflow-hidden ${
+          imageLoaded ? "" : "animate-pulse bg-muted"
+        }`}
       >
         <div
-          className={`blur-load w-full h-full ${imageLoaded ? 'loaded' : ''}`}
-          style={{ backgroundImage: book.blurImage ? `url(${book.blurImage})` : undefined }}
+          className={`blur-load w-full h-full ${imageLoaded ? "loaded" : ""}`}
+          style={{
+            backgroundImage: book.blurImage
+              ? `url(${book.blurImage})`
+              : undefined,
+          }}
         >
           <img
             src={book.coverImage}
@@ -45,7 +51,7 @@ export const BookCard: React.FC<BookCardProps> = ({ book, index = 0 }) => {
             </span>
           </div>
         </div>
-        <h3 className="mt-1 line-clamp-1 text-sm font-medium text-foreground">
+        <h3 className="mt-1 line-clamp-1 text-sm font-medium text-black">
           {book.title}
         </h3>
       </div>

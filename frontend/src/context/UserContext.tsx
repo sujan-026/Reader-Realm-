@@ -24,7 +24,6 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   signUp: (name: string, email: string, password: string) => Promise<boolean>;
-  loginWithGoogle: () => Promise<boolean>;
   resetPassword: (email: string) => Promise<boolean>;
   likedBooks: string[];
   toggleLikeBook: (bookId: string) => void;
@@ -159,31 +158,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
     }
   };
 
-  // ✅ GOOGLE LOGIN FUNCTION
-  const loginWithGoogle = async (): Promise<boolean> => {
-    setIsLoading(true);
-
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      const googleUser: User = {
-        id: `google-user-${Date.now()}`,
-        name: "Google User",
-        email: "google.user@example.com",
-        avatar: "https://randomuser.me/api/portraits/women/68.jpg",
-        role: "user",
-      };
-
-      setUser(googleUser);
-      toast.success("Successfully logged in with Google!");
-      return true;
-    } catch (error) {
-      toast.error("Google login failed. Please try again.");
-      return false;
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  
 
   // ✅ RESET PASSWORD FUNCTION
   const resetPassword = async (email: string): Promise<boolean> => {
@@ -243,7 +218,6 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
         login,
         logout,
         signUp,
-        loginWithGoogle,
         resetPassword,
         likedBooks,
         toggleLikeBook,

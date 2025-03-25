@@ -6,6 +6,8 @@ import React, {
   ReactNode,
 } from "react";
 
+import axios from "axios";
+
 export type Book = {
   _id: string;
   title: string;
@@ -45,7 +47,14 @@ type BookContextType = {
   getBook: (id: string) => Book | undefined;
   getAllGenres: () => string[];
   fetchBookById: (bookId: string) => Promise<Book | null>;
-  submitReview: (reviewData: Omit<Review, "id" | "date">) => Promise<any>;
+  submitReview: (reviewData: {
+    bookId: string;
+    userId: string;
+    userName: string;
+    userAvatar?: string;
+    rating: number;
+    text: string;
+  }) => Promise<{ success: boolean; data: Review }>;
 };
 
 const BookContext = createContext<BookContextType | undefined>(undefined);
@@ -168,29 +177,25 @@ export const BookProvider: React.FC<{ children: ReactNode }> = ({
     }
   };
 
-  const submitReview = async (reviewData) => {
+  const submitReview = async (reviewData: {
+    bookId: string;
+    userId: string;
+    userName: string;
+    userAvatar?: string;
+    rating: number;
+    text: string;
+  }) => {
     try {
-      const response = await fetch(`/api/reviews`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(reviewData), // Ensure bookId is sent
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to submit review");
-      }
-
-      return await response.json();
+      const response = await axios.post(
+        "http://localhost:5000/api/reviews/",
+        reviewData
+      );
+      return response.data;
     } catch (error) {
-      console.error("Error submitting review:", error);
+      console.error("Review submission error:", error);
       throw error;
     }
   };
-
-
-
 
   // Calculate new average rating
   const calculateAverageRating = (reviews: Review[]): number => {
@@ -201,7 +206,7 @@ export const BookProvider: React.FC<{ children: ReactNode }> = ({
 
   // Get book by ID
   const getBook = (id: string): Book | undefined => {
-    return books.find((book) => book.id === id);
+    return books.find((book) => book._id === id);
   };
 
   // Get all unique genres

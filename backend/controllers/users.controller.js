@@ -1,7 +1,8 @@
+import bcrypt from "bcryptjs";
 import User from "../models/Users.js";
 import mongoose from "mongoose";
 
-// Get all users 
+// Get all users
 export const getUsers = async (req, res) => {
   try {
     const users = await User.find();
@@ -41,11 +42,24 @@ export const createUser = async (req, res) => {
   if (!name || !email || !password) {
     return res
       .status(400)
-      .json({ success: false, message: "Complete details of Users is required" });
+      .json({
+        success: false,
+        message: "Complete details of Users is required",
+      });
   }
 
   try {
-    const newUser = new User({ name, avatar, email, role, password });
+    // Hash the password before saving it to the database
+    const salt = await bcrypt.genSalt(10); // Generate 10 rounds of salt
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    const newUser = new User({
+      name,
+      avatar,
+      email,
+      role,
+      password: hashedPassword,
+    });
     await newUser.save();
 
     res.status(201).json({ success: true, data: newUser });
@@ -65,11 +79,16 @@ export const updateUser = async (req, res) => {
   }
 
   try {
-    const updatedUser = await User.findByIdAndUpdate(
-      id,
-      { name, avatar, email, role, password },
-      { new: true }
-    );
+    // If password is being updated, hash it before saving
+    let updatedUserData = { name, avatar, email, role };
+    if (password) {
+      const salt = await bcrypt.genSalt(10);
+      updatedUserData.password = await bcrypt.hash(password, salt);
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(id, updatedUserData, {
+      new: true,
+    });
 
     if (!updatedUser) {
       return res
@@ -108,7 +127,7 @@ export const deleteUser = async (req, res) => {
   }
 };
 
-//Authenticate user
+// Authenticate user (login)
 export const loginUser = async (req, res) => {
   const { email, password } = req.body;
 
@@ -123,8 +142,7 @@ export const loginUser = async (req, res) => {
     }
 
     // Compare the hashed password
-    // const isMatch = await bcrypt.compare(password, user.password);
-    const isMatch = user.password;
+    const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res
         .status(401)

@@ -4,12 +4,12 @@ import { Layout } from "../components/Layout";
 import { StarRating } from "../components/StarRating";
 import { ReviewCard } from "../components/ReviewCard";
 import { useBooks } from "../context/BookContext";
+import { useUser } from "../context/UserContext";
 import {
   Calendar,
   Tag,
   ArrowLeft,
   ThumbsUp,
-  AlertCircle,
   MessageSquare,
 } from "lucide-react";
 import { useToast } from "../hooks/use-toast";
@@ -39,6 +39,7 @@ const BookDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { fetchBookById, submitReview } = useBooks();
+  const { user } = useUser();
   const { toast } = useToast();
 
   const [book, setBook] = useState<Book | null>(null);
@@ -85,13 +86,20 @@ const BookDetail = () => {
     e.preventDefault();
     setIsSubmitting(true);
 
+    // Use user data if available, otherwise fallback to guest user
+    const reviewData = {
+      bookId: id!, // Make sure this is included
+      userId: user?.id || "guest-user",
+      userName: user?.name || "Guest Reader",
+      userAvatar: user?.avatar || "", // Add this field
+      rating: userRating,
+      text: userReview,
+    };
+
     try {
-      await submitReview({
-        userId: "guest-user",
-        userName: "Guest Reader",
-        rating: userRating,
-        text: userReview,
-      });
+      console.log("Submitting review data:", reviewData); // Log the data to verify
+
+      await submitReview(reviewData);
 
       toast({
         title: "Review submitted",
@@ -105,16 +113,18 @@ const BookDetail = () => {
       const updatedBook = await fetchBookById(id!);
       setBook(updatedBook);
     } catch (error) {
+      console.error("Full review submission error:", error);
       toast({
         title: "Error",
-        description: "Failed to submit review.",
+        description: `Failed to submit review: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
         variant: "destructive",
       });
     }
 
     setIsSubmitting(false);
   };
-
 
   // Group reviews by recent and older
   const recentReviews = book.reviews.slice(0, 3);
@@ -225,7 +235,8 @@ const BookDetail = () => {
                 <label className="block text-sm font-medium mb-2">Rating</label>
                 <div className="flex gap-4 items-center">
                   <StarRating rating={userRating} />
-                  <select aria-label="Rating"
+                  <select
+                    aria-label="Rating"
                     value={userRating}
                     onChange={(e) => setUserRating(Number(e.target.value))}
                     className="rounded-md border-input bg-transparent px-3 py-1 text-sm shadow-sm"
@@ -263,7 +274,11 @@ const BookDetail = () => {
                 {recentReviews.map((review, index) => (
                   <ReviewCard
                     key={review._id || review.userId}
-                    review={{ ...review, id: review._id || review.userId, date: "" }}
+                    review={{
+                      ...review,
+                      id: review._id || review.userId,
+                      date: "",
+                    }}
                     index={index}
                   />
                 ))}
