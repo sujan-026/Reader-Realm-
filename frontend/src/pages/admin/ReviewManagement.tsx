@@ -69,7 +69,7 @@ const ReviewManagement = () => {
       if (book.reviews.includes(reviewId)) {
         return book.title; // Return the book title if the review exists in its array
       }
-      console.log(book.reviews);
+      // console.log(book.reviews);
     }
     return "Unknown"; // Default title if no match is found
   };

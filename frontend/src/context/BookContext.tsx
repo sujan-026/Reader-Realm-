@@ -114,7 +114,7 @@ export const BookProvider: React.FC<{ children: ReactNode }> = ({
       const response = await fetch(`http://localhost:5000/api/books/${bookId}`);
       if (!response.ok) throw new Error("Failed to fetch book");
       const data = await response.json();
-      console.log(data.data);
+      // console.log(data.data);
       return data.data; // Ensure we return the book object from API response
     } catch (error) {
       console.error("Error fetching book:", error);

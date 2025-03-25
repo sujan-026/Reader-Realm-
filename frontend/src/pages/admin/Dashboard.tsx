@@ -28,7 +28,7 @@ const Dashboard = () => {
             `Books API Error: ${booksRes.status} ${booksRes.statusText}`
           );
         const booksData = await booksRes.json();
-          console.log(booksData.data);
+          // console.log(booksData.data);
         // Extract books array if API returns an object
         const booksArray = booksData.data
 
@@ -43,8 +43,8 @@ const Dashboard = () => {
         // Extract users count if API returns an object
         const usersCount = usersData.data.length;
 
-        console.log("Books Data:", booksArray);
-        console.log("Users Data:", usersCount);
+        // console.log("Books Data:", booksArray);
+        // console.log("Users Data:", usersCount);
 
         setBooks(booksArray);
         setTotalUsers(usersCount);

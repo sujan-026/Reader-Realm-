@@ -13,7 +13,7 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({ review, index }) => {
 
   // Debugging: Check raw review details
   const reviewId = Object.values(review).join("");
-  console.log("Raw Review:", reviewId);
+  // console.log("Raw Review:", reviewId);
 
   useEffect(() => {
     const fetchReview = async () => {

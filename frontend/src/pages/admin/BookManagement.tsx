@@ -33,7 +33,7 @@ const BookManagement = () => {
   );
 
   const handleDeleteBook = async (bookId: string) => {
-    console.log(bookId);
+    // console.log(bookId);
     try {
       const response = await fetch(`http://localhost:5000/api/book/${bookId}`, {
         method: "DELETE",
