@@ -4,7 +4,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "back": "nodemon backend/server.js",
+    "back": "node backend/server.js",
     "start": "npm run backend-start && npm run frontend-start", 
     "backend-start": "npm install && npm run back", 
     "frontend-start": "cd frontend && npm install && npm run build", 
