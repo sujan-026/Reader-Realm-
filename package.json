@@ -5,11 +5,11 @@
   "type": "module",
   "scripts": {
     "back": "nodemon backend/server.js",
-    "start": "npm run backend-start && npm run frontend-start",
-    "backend-start": "npm install && nodemon backend/server.js",
-    "frontend-start": "cd frontend && npm install && npm run build",
-    "backend-dev": "npm install && nodemon backend/server.js",
-    "frontend-dev": "cd frontend && npm install && npm run dev"
+    "start": "npm run backend-start && npm run frontend-start", 
+    "backend-start": "npm install && npm run back", 
+    "frontend-start": "cd frontend && npm install && npm run build", 
+    "backend-dev": "npm install && nodemon backend/server.js", 
+    "frontend-dev": "cd frontend && npm install && npm run dev" 
   },
   "keywords": [],
   "author": "",
