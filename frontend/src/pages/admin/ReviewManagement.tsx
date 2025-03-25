@@ -34,7 +34,7 @@ const ReviewManagement = () => {
   // Fetch reviews
   const fetchReviews = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/reviews`);
+      const response = await fetch(`https://reader-realm.onrender.com/api/reviews`);
       if (!response.ok) throw new Error("Failed to fetch reviews");
 
       const data = await response.json();
@@ -50,7 +50,7 @@ const ReviewManagement = () => {
   // Fetch books
   const fetchBooks = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/books`);
+      const response = await fetch(`https://reader-realm.onrender.com/api/books`);
       if (!response.ok) throw new Error("Failed to fetch books");
 
       const data = await response.json();
@@ -78,7 +78,7 @@ const ReviewManagement = () => {
   const handleDeleteReview = async (reviewId) => {
     try {
       const response = await fetch(
-        `http://localhost:5000/api/reviews/${reviewId}`,
+        `https://reader-realm.onrender.com/api/reviews/${reviewId}`,
         {
           method: "DELETE",
         }

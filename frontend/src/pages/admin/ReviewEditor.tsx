@@ -39,7 +39,7 @@ const ReviewEditor = () => {
   useEffect(() => {
     // Load review data when editing an existing review (not a new one)
     if (!isNewReview && id) {
-      fetch(`http://localhost:5000/api/reviews/${id}`) // Fetch review by _id
+      fetch(`https://reader-realm.onrender.com/api/reviews/${id}`) // Fetch review by _id
         .then((response) => response.json())
         .then((data) => {
           setFormData({
@@ -74,8 +74,8 @@ const ReviewEditor = () => {
     setIsLoading(true);
 
     const url = isNewReview
-      ? "http://localhost:5000/api/reviews"
-      : `http://localhost:5000/api/reviews/${id}`;
+      ? "https://reader-realm.onrender.com/api/reviews"
+      : `https://reader-realm.onrender.com/api/reviews/${id}`;
 
     const method = isNewReview ? "POST" : "PUT";
 

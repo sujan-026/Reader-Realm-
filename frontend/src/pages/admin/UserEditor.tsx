@@ -24,7 +24,7 @@ const UserEditor = () => {
   useEffect(() => {
     // Load user data when editing an existing user (not a new one)
     if (!isNewUser && id) {
-      fetch(`http://localhost:5000/api/users/${id}`) // Fetch user by _id
+      fetch(`https://reader-realm.onrender.com/api/users/${id}`) // Fetch user by _id
         .then((response) => response.json())
         .then((data) => {
           setFormData({
@@ -57,8 +57,8 @@ const UserEditor = () => {
     setIsLoading(true);
 
     const url = isNewUser
-      ? "http://localhost:5000/api/users"
-      : `http://localhost:5000/api/users/${id}`;
+      ? "https://reader-realm.onrender.com/api/users"
+      : `https://reader-realm.onrender.com/api/users/${id}`;
 
     const method = isNewUser ? "POST" : "PUT";
 

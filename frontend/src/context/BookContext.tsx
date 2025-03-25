@@ -69,7 +69,9 @@ export const BookProvider: React.FC<{ children: ReactNode }> = ({
   useEffect(() => {
   const fetchBooks = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/books`);
+      const response = await fetch(
+        `https://reader-realm.onrender.com/api/books`
+      );
       if (!response.ok) throw new Error("Failed to fetch books");
 
       const data = await response.json();
@@ -81,7 +83,7 @@ export const BookProvider: React.FC<{ children: ReactNode }> = ({
           const reviewsWithDetails = await Promise.all(
             book.reviews.map(async (reviewId: string) => {
               const reviewResponse = await fetch(
-                `http://localhost:5000/api/review/${reviewId}`
+                `https://reader-realm.onrender.com/api/review/${reviewId}`
               );
               if (!reviewResponse.ok) return null; // Handle failed requests
 
@@ -111,7 +113,9 @@ export const BookProvider: React.FC<{ children: ReactNode }> = ({
   // Fetch a single book by ID
   const fetchBookById = async (bookId: string) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/books/${bookId}`);
+      const response = await fetch(
+        `https://reader-realm.onrender.com/api/books/${bookId}`
+      );
       if (!response.ok) throw new Error("Failed to fetch book");
       const data = await response.json();
       // console.log(data.data);
@@ -148,11 +152,14 @@ export const BookProvider: React.FC<{ children: ReactNode }> = ({
     };
 
     try {
-      const response = await fetch(`http://localhost:5000/api/reviews/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(reviewPayload),
-      });
+      const response = await fetch(
+        `https://reader-realm.onrender.com/api/reviews/`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(reviewPayload),
+        }
+      );
 
       if (!response.ok) throw new Error("Failed to add review");
 
@@ -187,7 +194,7 @@ export const BookProvider: React.FC<{ children: ReactNode }> = ({
   }) => {
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/reviews/",
+        "https://reader-realm.onrender.com/api/reviews/",
         reviewData
       );
       return response.data;

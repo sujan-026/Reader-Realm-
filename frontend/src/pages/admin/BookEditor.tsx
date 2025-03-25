@@ -92,8 +92,8 @@ const BookEditor = () => {
     setIsLoading(true);
 
     const url = isNewBook
-      ? "http://localhost:5000/api/books"
-      : `http://localhost:5000/api/books/${id}`;
+      ? "https://reader-realm.onrender.com/api/books"
+      : `https://reader-realm.onrender.com/api/books/${id}`;
 
     const method = isNewBook ? "POST" : "PUT";
 

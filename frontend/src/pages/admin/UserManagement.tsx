@@ -26,7 +26,9 @@ const UserManagement = () => {
   // Fetch all users
   const fetchUsers = async () => {
     try {
-      const response = await fetch("http://localhost:5000/api/users");
+      const response = await fetch(
+        "https://reader-realm.onrender.com/api/users"
+      );
       if (!response.ok) throw new Error("Failed to fetch users");
 
       const data = await response.json();
@@ -47,7 +49,7 @@ const UserManagement = () => {
   const handleDeleteUser = async (userId) => {
     try {
       const response = await fetch(
-        `http://localhost:5000/api/users/${userId}`,
+        `https://reader-realm.onrender.com/api/users/${userId}`,
         {
           method: "DELETE",
         }

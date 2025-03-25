@@ -92,11 +92,14 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
     setIsLoading(true);
 
     try {
-      const response = await fetch("http://localhost:5000/api/users/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
+      const response = await fetch(
+        "https://reader-realm.onrender.com/api/users/login",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        }
+      );
 
       const data = await response.json();
       console.log("Login response data:", data);
@@ -133,11 +136,14 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
     setIsLoading(true);
 
     try {
-      const response = await fetch("http://localhost:5000/api/users", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password, role: "user" }),
-      });
+      const response = await fetch(
+        "https://reader-realm.onrender.com/api/users",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, email, password, role: "user" }),
+        }
+      );
 
       const data = await response.json();
       console.log("Signup response data:", data);
@@ -164,7 +170,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
   const resetPassword = async (email: string): Promise<boolean> => {
     try {
       const response = await fetch(
-        "http://localhost:5000/api/users/reset-password",
+        "https://reader-realm.onrender.com/api/users/reset-password",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

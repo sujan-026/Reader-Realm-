@@ -35,9 +35,12 @@ const BookManagement = () => {
   const handleDeleteBook = async (bookId: string) => {
     // console.log(bookId);
     try {
-      const response = await fetch(`http://localhost:5000/api/book/${bookId}`, {
-        method: "DELETE",
-      });
+      const response = await fetch(
+        `https://reader-realm.onrender.com/api/book/${bookId}`,
+        {
+          method: "DELETE",
+        }
+      );
       if (response.ok) {
         toast.success('Book deleted successfully');
         // Optionally, update the books state here if needed.

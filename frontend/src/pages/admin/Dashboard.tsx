@@ -22,7 +22,7 @@ const Dashboard = () => {
       setLoading(true);
       try {
         // Fetch Books
-        const booksRes = await fetch("http://localhost:5000/api/books");
+        const booksRes = await fetch("https://reader-realm.onrender.com/api/books");
         if (!booksRes.ok)
           throw new Error(
             `Books API Error: ${booksRes.status} ${booksRes.statusText}`
@@ -33,7 +33,7 @@ const Dashboard = () => {
         const booksArray = booksData.data
 
         // Fetch Users
-        const usersRes = await fetch("http://localhost:5000/api/users");
+        const usersRes = await fetch("https://reader-realm.onrender.com/api/users");
         if (!usersRes.ok)
           throw new Error(
             `Users API Error: ${usersRes.status} ${usersRes.statusText}`

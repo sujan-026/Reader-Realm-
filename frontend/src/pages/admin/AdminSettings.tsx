@@ -90,7 +90,7 @@ const AdminSettings = () => {
       updateData.password = password;
     }
 
-    const url = `http://localhost:5000/api/users/${user.id}`;
+    const url = `https://reader-realm.onrender.com/api/users/${user.id}`;
     const method = "PUT";
 
     try {

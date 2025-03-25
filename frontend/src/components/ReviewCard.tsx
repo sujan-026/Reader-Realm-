@@ -19,7 +19,7 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({ review, index }) => {
     const fetchReview = async () => {
       try {
         const response = await fetch(
-          `http://localhost:5000/api/reviews/${reviewId}`
+          `https://reader-realm.onrender.com/api/reviews/${reviewId}`
         );
 
         if (!response.ok) {
