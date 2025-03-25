@@ -6,6 +6,9 @@
 
 Welcome to the **Reader Realm**! This platform allows users to explore books and their reviews, create user accounts, and contribute their own reviews. Admins have the special privilege to manage books, reviews, and users with full CRUD operations.
 
+## Live Website
+You can visit the live website at: **https://reader-realm.vercel.app/**
+
 ## Features
 
 - **User Features:**
