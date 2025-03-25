@@ -48,7 +48,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
       if (savedUser) {
         try {
           const parsedUser = JSON.parse(savedUser);
-          console.log("Loaded user from localStorage:", parsedUser);
+          // console.log("Loaded user from localStorage:", parsedUser);
           setUser(parsedUser);
         } catch (error) {
           console.error("Error parsing user from localStorage:", error);
@@ -74,10 +74,10 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
   // ✅ Save user to localStorage whenever it changes
   useEffect(() => {
     if (user) {
-      console.log("Saving user to localStorage:", user);
+      // console.log("Saving user to localStorage:", user);
       localStorage.setItem("user", JSON.stringify(user));
     } else {
-      console.log("Removing user from localStorage");
+      // console.log("Removing user from localStorage");
       localStorage.removeItem("user");
     }
   }, [user]);
